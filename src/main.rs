@@ -1,29 +1,26 @@
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-use sdl2::pixels::Color;
+use sdl2::rect::Point;
 use std::time::Duration;
 
 pub fn main() {
-    let sdl_context = sdl2::init().unwrap();
-    let video_subsystem = sdl_context.video().unwrap();
+    let mut renderer = renderer::Renderer::new(800, 600, "Sdl demo window");
 
-    let window = video_subsystem
-        .window("rust-sdl2 demo", 800, 600)
-        .position_centered()
-        .build()
-        .unwrap();
+    renderer.set_background(sdl2::pixels::Color::RGB(0, 0, 0));
+    renderer.set_foreground(sdl2::pixels::Color::RGB(67, 255, 20));
 
-    let mut canvas = window.into_canvas().build().unwrap();
+    let mut event_pump = renderer.event_pump();
 
-    canvas.set_draw_color(Color::RGB(0, 255, 255));
-    canvas.clear();
-    canvas.present();
-    let mut event_pump = sdl_context.event_pump().unwrap();
-    let mut i = 0;
     'running: loop {
-        i = (i + 1) % 255;
-        canvas.set_draw_color(Color::RGB(i, 64, 255 - i));
-        canvas.clear();
+        renderer.clear_canvas();
+
+        let drawing_res = renderer.draw_square(&Point::new(20, 20), 30);
+        match drawing_res {
+            Ok(_) => {}
+            Err(_) => {
+                println!("Unsuccessful drawing")
+            }
+        }
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. }
@@ -36,7 +33,7 @@ pub fn main() {
         }
         // The rest of the game loop goes here...
 
-        canvas.present();
+        renderer.present_canvas();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
     }
 }
