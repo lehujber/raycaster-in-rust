@@ -6,6 +6,13 @@ use std::time::Duration;
 pub fn main() {
     let mut renderer = renderer::Renderer::new(800, 600, "Sdl demo window");
 
+    let map = [[true, true, true], [true, false, true], [true, false, true]]
+        .iter()
+        .map(|row| Vec::from(row))
+        .collect::<Vec<Vec<bool>>>();
+
+    let mut gamestate = gamestate::Gamestate::new(map, 70, 70);
+
     renderer.set_background(sdl2::pixels::Color::RGB(0, 0, 0));
     renderer.set_foreground(sdl2::pixels::Color::RGB(67, 255, 20));
 
@@ -14,7 +21,7 @@ pub fn main() {
     'running: loop {
         renderer.clear_canvas();
 
-        let drawing_res = renderer.draw_square(&Point::new(20, 20), 30);
+        let drawing_res = renderer.draw_map(gamestate.map(), 80);
         match drawing_res {
             Ok(_) => {}
             Err(_) => {

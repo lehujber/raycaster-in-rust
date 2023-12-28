@@ -5,6 +5,7 @@ pub struct Player {
     view_direction: (f32, f32),
     field_of_view: f32,
     posisiton: (i32, i32),
+    view_distance: i32,
 }
 
 impl Player {
@@ -14,6 +15,7 @@ impl Player {
             view_direction: (0.0, 0.0),
             field_of_view: fov,
             posisiton: (x_position, y_position),
+            view_distance: 40,
         }
     }
 }
