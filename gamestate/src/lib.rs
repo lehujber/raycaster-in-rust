@@ -1,23 +1,31 @@
+mod map;
 mod player;
+use crate::map::Map;
 use crate::player::Player;
-#[derive(Debug)]
 #[allow(dead_code)]
 pub struct Gamestate {
-    map: Vec<Vec<bool>>,
+    map: Map,
     player: Player,
 }
 
 impl Gamestate {
-    pub fn new(map: Vec<Vec<bool>>, player_x: i32, player_y: i32) -> Gamestate {
-        let game_map = map;
+    pub fn new(map_matrix: Vec<Vec<bool>>, player_x: f32, player_y: f32) -> Gamestate {
+        let map = Map::new(map_matrix);
         let player = player::Player::new(player_x, player_y, 120.0);
-        Gamestate {
-            map: game_map,
-            player,
-        }
+        Gamestate { map, player }
     }
 
-    pub fn map(&self) -> &Vec<Vec<bool>> {
-        &self.map
+    pub fn map_walls(&self) -> &Vec<u8> {
+        self.map.walls()
+    }
+    pub fn map_width(&self) -> u8 {
+        self.map.width()
+    }
+    pub fn map_height(&self) -> u8 {
+        self.map.height()
+    }
+
+    pub fn player_position(&self) -> (f32, f32) {
+        self.player.position()
     }
 }
