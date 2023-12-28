@@ -28,4 +28,29 @@ impl Gamestate {
     pub fn player_position(&self) -> (f32, f32) {
         self.player.position()
     }
+
+    pub fn player_rotation(&self) -> f32 {
+        self.player.view_direction()
+    }
+    pub fn player_rotate(&mut self, dir: TurnDirection) {
+        match dir {
+            TurnDirection::Left => self.player.rotate(-10.0),
+            TurnDirection::Right => self.player.rotate(10.0),
+        }
+    }
+    pub fn player_move(&mut self, dir: MoveDirection, delta_time: f32) {
+        match dir {
+            MoveDirection::Forward => self.player.update_position(delta_time, 10.0),
+            MoveDirection::Backward => self.player.update_position(delta_time, -10.0),
+        }
+    }
+}
+
+pub enum TurnDirection {
+    Left,
+    Right,
+}
+pub enum MoveDirection {
+    Forward,
+    Backward,
 }

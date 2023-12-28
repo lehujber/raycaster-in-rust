@@ -12,12 +12,19 @@ pub fn main() {
         .map(|row| Vec::from(row))
         .collect::<Vec<Vec<bool>>>();
 
-    let gamestate = gamestate::Gamestate::new(map, 150.0, 150.0);
+    let mut gamestate = gamestate::Gamestate::new(map, 150.0, 150.0);
 
     renderer.set_background_color(sdl2::pixels::Color::RGB(0, 0, 0));
     renderer.set_wall_color(sdl2::pixels::Color::RGB(67, 255, 20));
     renderer.set_floor_color(sdl2::pixels::Color::RGB(255, 0, 255));
-    renderer.set_player_color(sdl2::pixels::Color::RGB(67, 255, 20));
+    renderer.set_player_color(sdl2::pixels::Color::RGB(0, 0, 255));
+
+    match renderer.set_scale(3.0) {
+        Ok(_) => {}
+        Err(s) => {
+            println!("Error setting scale: {s}")
+        }
+    }
 
     let mut event_pump = renderer.event_pump();
 
@@ -37,7 +44,10 @@ pub fn main() {
         }
 
         let (x, y) = gamestate.player_position();
-        let player_drawing_res = renderer.draw_player(model_to_screen_coordinate(x, y));
+        let player_drawing_res = renderer.draw_player(
+            model_to_screen_coordinate(x, y),
+            gamestate.player_rotation(),
+        );
         match player_drawing_res {
             Ok(_) => {}
             Err(s) => {
@@ -53,16 +63,20 @@ pub fn main() {
                 } => break 'running,
                 Event::KeyDown { keycode: code, .. } => match code {
                     Some(Keycode::W) => {
-                        println!("W pressed")
+                        println!("W pressed");
+                        gamestate.player_move(gamestate::MoveDirection::Forward, 1000.0)
                     }
                     Some(Keycode::S) => {
-                        println!("S pressed")
+                        println!("S pressed");
+                        gamestate.player_move(gamestate::MoveDirection::Backward, 1000.0)
                     }
                     Some(Keycode::A) => {
-                        println!("A pressed")
+                        println!("A pressed");
+                        gamestate.player_rotate(gamestate::TurnDirection::Left)
                     }
                     Some(Keycode::D) => {
-                        println!("D pressed")
+                        println!("D pressed");
+                        gamestate.player_rotate(gamestate::TurnDirection::Right)
                     }
                     _ => {}
                 },

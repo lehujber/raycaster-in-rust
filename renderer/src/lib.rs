@@ -120,22 +120,48 @@ impl Renderer {
         self.canvas.fill_rects(&walled_spaces)
     }
 
-    pub fn draw_player(&mut self, position: sdl2::rect::Point) -> Result<(), String> {
-        self.canvas.set_draw_color(self.player_color);
-
+    pub fn draw_player(
+        &mut self,
+        position: sdl2::rect::Point,
+        player_rotation: f32,
+    ) -> Result<(), String> {
         use sdl2::rect::Point;
+        self.canvas.set_draw_color(self.player_color);
 
         let x = position.x;
         let y = position.y;
-        let drawing_res = self
-            .canvas
-            .draw_line(Point::new(x - 3, y), Point::new(x + 3, y));
+        let drawing_res = self.canvas.draw_line(
+            Renderer::rotate_point(Point::new(x, y + 3), position, player_rotation),
+            Renderer::rotate_point(Point::new(x, y - 3), position, player_rotation),
+        );
         match drawing_res {
             Ok(_) => {}
             Err(_) => return drawing_res,
         }
 
-        self.canvas
-            .draw_line(Point::new(x, y + 2), Point::new(x, y - 5))
+        self.canvas.draw_line(
+            Renderer::rotate_point(Point::new(x - 5, y), position, player_rotation),
+            Renderer::rotate_point(Point::new(x + 2, y), position, player_rotation),
+        )
+    }
+
+    fn rotate_point(
+        p: sdl2::rect::Point,
+        center: sdl2::rect::Point,
+        rotation: f32,
+    ) -> sdl2::rect::Point {
+        use sdl2::rect::Point;
+
+        const RADIAN_MULTIPLIER: f32 = std::f32::consts::PI / 180.0;
+
+        let s = (rotation * RADIAN_MULTIPLIER).sin();
+        let c = (rotation * RADIAN_MULTIPLIER).cos();
+
+        let t = Point::new(p.x - center.x, p.y - center.y);
+
+        let nx = ((t.x as f32) * c - (t.y as f32) * s) + (center.x as f32);
+        let ny = ((t.x as f32) * s + (t.y as f32) * c) + (center.y as f32);
+
+        Point::new(nx as i32, ny as i32)
     }
 }
