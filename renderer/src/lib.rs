@@ -154,10 +154,12 @@ impl Renderer {
 
         const RADIAN_MULTIPLIER: f32 = std::f32::consts::PI / 180.0;
 
-        let s = (rotation * RADIAN_MULTIPLIER).sin();
-        let c = (rotation * RADIAN_MULTIPLIER).cos();
+        let rotation_rad = rotation * RADIAN_MULTIPLIER;
 
-        let t = Point::new(p.x - center.x, p.y - center.y);
+        let s = (rotation_rad).sin();
+        let c = (rotation_rad).cos();
+
+        let t = p - center;
 
         let nx = ((t.x as f32) * c - (t.y as f32) * s) + (center.x as f32);
         let ny = ((t.x as f32) * s + (t.y as f32) * c) + (center.y as f32);
