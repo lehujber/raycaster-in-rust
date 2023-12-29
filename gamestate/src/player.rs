@@ -51,7 +51,8 @@ impl Player {
         } else if self.view_direction > 360.0 {
             self.view_direction -= 360.0;
         }
-        let view_dir = self.view_direction;
-        println!("View direction: {view_dir}")
+    }
+    pub fn set_position(&mut self, x: f32, y: f32) {
+        self.posisiton = (x, y);
     }
 }

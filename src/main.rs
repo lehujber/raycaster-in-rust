@@ -1,25 +1,31 @@
+use gamestate::Gamestate;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use std::f32;
 
-const BLOCK_SIZE: u32 = 70;
+const RENDER_BLOCK_SIZE: u32 = 70;
 
 pub fn main() {
     let mut renderer = renderer::Renderer::new(800, 600, "Sdl demo window");
 
-    let map = [[true, true, true], [true, false, true], [true, false, true]]
-        .iter()
-        .map(|row| Vec::from(row))
-        .collect::<Vec<Vec<bool>>>();
+    let map = [
+        [true, false, false, false],
+        [true, false, true, false],
+        [true, false, true, false],
+        [true, false, false, false],
+    ]
+    .iter()
+    .map(|row| Vec::from(row))
+    .collect::<Vec<Vec<bool>>>();
 
-    let mut gamestate = gamestate::Gamestate::new(map, 150.0, 150.0);
+    let mut gamestate = gamestate::Gamestate::new(map, 150.0, 150.0, 100);
 
     renderer.set_background_color(sdl2::pixels::Color::RGB(0, 0, 0));
     renderer.set_wall_color(sdl2::pixels::Color::RGB(67, 255, 20));
     renderer.set_floor_color(sdl2::pixels::Color::RGB(255, 0, 255));
     renderer.set_player_color(sdl2::pixels::Color::RGB(0, 0, 255));
 
-    match renderer.set_scale(3.0) {
+    match renderer.set_scale(2.0) {
         Ok(_) => {}
         Err(s) => {
             println!("Error setting scale: {s}")
@@ -45,7 +51,7 @@ pub fn main() {
 
         let (x, y) = gamestate.player_position();
         let player_drawing_res = renderer.draw_player(
-            model_to_screen_coordinate(x, y),
+            model_to_screen_coordinate(x, y, gamestate.block_size()),
             gamestate.player_rotation(),
         );
         match player_drawing_res {
@@ -89,14 +95,9 @@ pub fn main() {
     }
 }
 
-pub fn model_to_screen_coordinate(x: f32, y: f32) -> sdl2::rect::Point {
-    let x_screen = x / 100.0;
-    let y_screen = y / 100.0;
+pub fn model_to_screen_coordinate(x: f32, y: f32, gamestate_scale: u8) -> sdl2::rect::Point {
+    let x_screen = x / (gamestate_scale as f32);
+    let y_screen = y / (gamestate_scale as f32);
 
-    let block_size = BLOCK_SIZE as f32;
-
-    sdl2::rect::Point::new(
-        (x_screen * block_size) as i32,
-        (y_screen * block_size) as i32,
-    )
+    sdl2::rect::Point::new((x_screen * 70.0) as i32, (y_screen * 70.0) as i32)
 }
