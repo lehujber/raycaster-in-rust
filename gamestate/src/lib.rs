@@ -6,7 +6,7 @@ use crate::player::Player;
 pub struct Gamestate {
     map: Map,
     player: Player,
-    block_size: u8,
+    block_size: u16,
 }
 
 impl Gamestate {
@@ -14,7 +14,7 @@ impl Gamestate {
         map_matrix: Vec<Vec<bool>>,
         player_x: f32,
         player_y: f32,
-        block_size: u8,
+        block_size: u16,
     ) -> Gamestate {
         let map = Map::new(map_matrix);
         let player = player::Player::new(player_x, player_y, 120.0);
@@ -34,7 +34,7 @@ impl Gamestate {
     pub fn map_height(&self) -> u8 {
         self.map.height()
     }
-    pub fn block_size(&self) -> u8 {
+    pub fn block_size(&self) -> u16 {
         self.block_size
     }
 
@@ -53,7 +53,6 @@ impl Gamestate {
     }
     pub fn player_move(&mut self, dir: MoveDirection, delta_time: u128) {
         let (x_past, y_past) = self.player_position();
-        // println!("past pos: {x_past}, {y_past}");
 
         match dir {
             MoveDirection::Forward => self.player.update_position(delta_time, 1.0),
@@ -61,9 +60,55 @@ impl Gamestate {
         }
 
         if !self.valdate_position() {
-            self.player.set_position(x_past, y_past);
-        } else {
-            // println!("cant move player :(");
+            // self.player.set_position(x_past, y_past);
+            let (x_curr, y_curr) = self.player_position();
+
+            let (x_block_past, y_block_past) = self.imaginary_block_position(x_past, y_past);
+
+            let (x_block_curr, y_block_curr) = self.imaginary_block_position(x_curr, y_curr);
+
+            let row_step_direction = if x_curr < 0.0 {
+                -1
+            } else {
+                (x_block_curr - x_block_past).clamp(-1, 1)
+            };
+            let col_step_direction = if y_curr < 0.0 {
+                -1
+            } else {
+                (y_block_curr - y_block_past).clamp(-1, 1)
+            };
+
+            let (x_left, y_top, x_right, y_bottom) =
+                self.block_corners(self.block_id(x_past, y_past));
+
+            let m = (y_past - y_curr).abs() / (x_past - x_curr).abs();
+            let b = y_past - (m * x_past);
+
+            let new_cords = match row_step_direction {
+                1 => Some((x_right, m * x_right + b)),
+                -1 => Some((x_left, m * x_left + b)),
+                _ => None,
+            };
+            match new_cords {
+                Some(cords) => self.player.set_position(cords.0, cords.1),
+                None => {
+                    let correct_cords = match col_step_direction {
+                        1 => Some(((y_bottom - b) / m, y_bottom)),
+                        -1 => Some(((y_top - b) / m, y_top)),
+                        _ => None,
+                    };
+                    match correct_cords {
+                        Some(cords) => {
+                            let (x_corrected, y_corrected) = cords;
+                            self.player.set_position(x_corrected, y_corrected)
+                        }
+                        None => {
+                            println!("No location found through calculations, resetting to past position");
+                            self.player.set_position(x_past, y_past)
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -83,6 +128,22 @@ impl Gamestate {
         let y_block = (y / self.block_size as f32) as u8;
 
         y_block * self.map_width() + x_block
+    }
+
+    fn block_corners(&self, block_id: u8) -> (f32, f32, f32, f32) {
+        let y_block = (block_id / self.map_width()) as u16;
+        let x_block = (block_id % self.map_width()) as u16;
+
+        let (x_top, y_top) = (x_block * self.block_size, y_block * self.block_size);
+        let (x_bottom, y_bottom) = (x_top + self.block_size - 1, y_top + self.block_size - 1);
+        (x_top as f32, y_top as f32, x_bottom as f32, y_bottom as f32)
+    }
+
+    fn imaginary_block_position(&self, x: f32, y: f32) -> (i16, i16) {
+        let block_x = x as i16 / self.block_size as i16;
+        let block_y = y as i16 / self.block_size as i16;
+
+        (block_x, block_y)
     }
 }
 

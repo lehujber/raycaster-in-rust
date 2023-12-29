@@ -1,16 +1,14 @@
-use gamestate::{Gamestate, MoveDirection, TurnDirection};
+use gamestate::{MoveDirection, TurnDirection};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use std::f32;
-
-const RENDER_BLOCK_SIZE: u32 = 70;
 
 pub fn main() {
     let mut renderer = renderer::Renderer::new(800, 600, "Sdl demo window");
 
     let map = [
         [true, false, false, false],
-        [true, false, true, false],
+        [false, false, true, false],
         [true, false, true, false],
         [true, false, false, false],
     ]
@@ -127,7 +125,7 @@ pub fn main() {
     }
 }
 
-pub fn model_to_screen_coordinate(x: f32, y: f32, gamestate_scale: u8) -> sdl2::rect::Point {
+pub fn model_to_screen_coordinate(x: f32, y: f32, gamestate_scale: u16) -> sdl2::rect::Point {
     let x_screen = x / (gamestate_scale as f32);
     let y_screen = y / (gamestate_scale as f32);
 
