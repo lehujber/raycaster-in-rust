@@ -60,7 +60,7 @@ impl Gamestate {
         }
 
         if !self.valdate_position() {
-            // self.player.set_position(x_past, y_past);
+            //TODO: fix issue with repeat collisions making player teleport into walls
             let (x_curr, y_curr) = self.player_position();
 
             let (x_block_past, y_block_past) = self.imaginary_block_position(x_past, y_past);
