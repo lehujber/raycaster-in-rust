@@ -45,23 +45,25 @@ impl Gamestate {
     pub fn player_rotation(&self) -> f32 {
         self.player.view_direction()
     }
-    pub fn player_rotate(&mut self, dir: TurnDirection) {
+    pub fn player_rotate(&mut self, dir: TurnDirection, delta_time: u128) {
         match dir {
-            TurnDirection::Left => self.player.rotate(-10.0),
-            TurnDirection::Right => self.player.rotate(10.0),
+            TurnDirection::Left => self.player.rotate(-1.0, delta_time),
+            TurnDirection::Right => self.player.rotate(1.0, delta_time),
         }
     }
-    pub fn player_move(&mut self, dir: MoveDirection, delta_time: f32) {
+    pub fn player_move(&mut self, dir: MoveDirection, delta_time: u128) {
         let (x_past, y_past) = self.player_position();
-        println!("past pos: {x_past}, {y_past}");
+        // println!("past pos: {x_past}, {y_past}");
 
         match dir {
-            MoveDirection::Forward => self.player.update_position(delta_time, 10.0),
-            MoveDirection::Backward => self.player.update_position(delta_time, -10.0),
+            MoveDirection::Forward => self.player.update_position(delta_time, 1.0),
+            MoveDirection::Backward => self.player.update_position(delta_time, -1.0),
         }
 
         if !self.valdate_position() {
             self.player.set_position(x_past, y_past);
+        } else {
+            // println!("cant move player :(");
         }
     }
 

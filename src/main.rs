@@ -1,4 +1,4 @@
-use gamestate::Gamestate;
+use gamestate::{Gamestate, MoveDirection, TurnDirection};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use std::f32;
@@ -34,7 +34,70 @@ pub fn main() {
 
     let mut event_pump = renderer.event_pump();
 
+    struct EventWrapper {
+        w: bool,
+        s: bool,
+        a: bool,
+        d: bool,
+
+        last_event: std::time::Instant,
+    }
+
+    let mut events = EventWrapper {
+        w: false,
+        s: false,
+        a: false,
+        d: false,
+
+        last_event: std::time::Instant::now(),
+    };
+
     'running: loop {
+        for event in event_pump.poll_iter() {
+            match event {
+                Event::Quit { .. }
+                | Event::KeyDown {
+                    keycode: Some(Keycode::Escape),
+                    ..
+                } => break 'running,
+                Event::KeyDown { keycode: code, .. } => match code {
+                    Some(Keycode::W) => events.w = true,
+                    Some(Keycode::S) => events.s = true,
+                    Some(Keycode::A) => events.a = true,
+                    Some(Keycode::D) => events.d = true,
+                    _ => {}
+                },
+                Event::KeyUp { keycode: code, .. } => match code {
+                    Some(Keycode::W) => events.w = false,
+                    Some(Keycode::S) => events.s = false,
+                    Some(Keycode::A) => events.a = false,
+                    Some(Keycode::D) => events.d = false,
+                    _ => {}
+                },
+
+                _ => {}
+            }
+        }
+
+        let current_time = std::time::Instant::now();
+        let delta_time = (current_time - events.last_event).as_nanos();
+
+        events.last_event = current_time;
+        if events.w {
+            gamestate.player_move(MoveDirection::Forward, delta_time);
+        }
+        if events.s {
+            gamestate.player_move(MoveDirection::Backward, delta_time);
+        }
+        if events.a {
+            gamestate.player_rotate(TurnDirection::Left, delta_time);
+        }
+        if events.d {
+            gamestate.player_rotate(TurnDirection::Right, delta_time);
+        }
+
+        // The rest of the game loop goes here...
+
         renderer.clear_canvas();
         let map_drawing_res = renderer.draw_map(
             gamestate.map_walls(),
@@ -60,37 +123,6 @@ pub fn main() {
                 println!("Unsuccessful drawing: {s}")
             }
         }
-        for event in event_pump.poll_iter() {
-            match event {
-                Event::Quit { .. }
-                | Event::KeyDown {
-                    keycode: Some(Keycode::Escape),
-                    ..
-                } => break 'running,
-                Event::KeyDown { keycode: code, .. } => match code {
-                    Some(Keycode::W) => {
-                        println!("W pressed");
-                        gamestate.player_move(gamestate::MoveDirection::Forward, 1000.0)
-                    }
-                    Some(Keycode::S) => {
-                        println!("S pressed");
-                        gamestate.player_move(gamestate::MoveDirection::Backward, 1000.0)
-                    }
-                    Some(Keycode::A) => {
-                        println!("A pressed");
-                        gamestate.player_rotate(gamestate::TurnDirection::Left)
-                    }
-                    Some(Keycode::D) => {
-                        println!("D pressed");
-                        gamestate.player_rotate(gamestate::TurnDirection::Right)
-                    }
-                    _ => {}
-                },
-                _ => {}
-            }
-        }
-        // The rest of the game loop goes here...
-
         renderer.present_canvas();
     }
 }
