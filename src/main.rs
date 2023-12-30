@@ -1,7 +1,6 @@
 use gamestate::{MoveDirection, TurnDirection};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-use sdl2::rect::Point;
 use std::f32;
 
 pub fn main() {

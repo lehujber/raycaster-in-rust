@@ -89,7 +89,7 @@ impl Renderer {
 
     pub fn draw_map(
         &mut self,
-        map: &[u8],
+        map: &[u16],
         map_width: u8,
         map_height: u8,
         block_size: u32,
@@ -111,7 +111,7 @@ impl Renderer {
         self.canvas.set_draw_color(self.wall_color);
         let walled_spaces = map
             .iter()
-            .map(|x| (x % map_width, x / map_width))
+            .map(|x| (x % map_width as u16, x / map_width as u16))
             .map(|(x, y)| {
                 Rect::new(
                     (x as i32) * (block_size as i32),

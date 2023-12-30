@@ -2,7 +2,7 @@
 pub struct Map {
     width: u8,
     height: u8,
-    walls: Vec<u8>,
+    walls: Vec<u16>,
 }
 
 impl Map {
@@ -16,7 +16,7 @@ impl Map {
             .zip(0..)
             .filter(|(x, _)| **x)
             .map(|(_, y)| y)
-            .collect::<Vec<u8>>();
+            .collect::<Vec<u16>>();
 
         Map {
             width,
@@ -25,7 +25,7 @@ impl Map {
         }
     }
 
-    pub fn walls(&self) -> &Vec<u8> {
+    pub fn walls(&self) -> &Vec<u16> {
         &self.walls
     }
     pub fn width(&self) -> u8 {

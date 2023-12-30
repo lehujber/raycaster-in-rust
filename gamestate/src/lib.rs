@@ -38,7 +38,7 @@ impl Gamestate {
         }
     }
 
-    pub fn map_walls(&self) -> &Vec<u8> {
+    pub fn map_walls(&self) -> &Vec<u16> {
         self.map.walls()
     }
     pub fn map_width(&self) -> u8 {
@@ -139,8 +139,6 @@ impl Gamestate {
         const RADIAN_MULTIPLIER: f32 = std::f32::consts::PI / 180.0;
         let player_angle = self.player.view_direction() * RADIAN_MULTIPLIER;
 
-        println!("{player_angle}");
-
         self.ray_angles
             .iter()
             .map(|ray_angle| {
@@ -165,16 +163,16 @@ impl Gamestate {
         !self.map.walls().contains(&self.block_id(x, y))
     }
 
-    fn block_id(&self, x: f32, y: f32) -> u8 {
-        let x_block = (x / self.block_size as f32) as u8;
-        let y_block = (y / self.block_size as f32) as u8;
+    fn block_id(&self, x: f32, y: f32) -> u16 {
+        let x_block = (x / self.block_size as f32) as u16;
+        let y_block = (y / self.block_size as f32) as u16;
 
-        y_block * self.map_width() + x_block
+        y_block * self.map_width() as u16 + x_block
     }
 
-    fn block_corners(&self, block_id: u8) -> (f32, f32, f32, f32) {
-        let y_block = (block_id / self.map_width()) as u16;
-        let x_block = (block_id % self.map_width()) as u16;
+    fn block_corners(&self, block_id: u16) -> (f32, f32, f32, f32) {
+        let y_block = block_id / self.map_width() as u16;
+        let x_block = block_id % self.map_width() as u16;
 
         let (x_top, y_top) = (x_block * self.block_size, y_block * self.block_size);
         let (x_bottom, y_bottom) = (x_top + self.block_size - 1, y_top + self.block_size - 1);
@@ -187,6 +185,8 @@ impl Gamestate {
 
         (block_x, block_y)
     }
+
+    // fn touched_blocks(&self, x_start: f32, y_start: f32, x_end: f32, y_end: f32) -> Vec<u16> {}
 }
 
 pub enum TurnDirection {
