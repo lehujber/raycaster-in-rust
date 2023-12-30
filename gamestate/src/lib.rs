@@ -60,7 +60,6 @@ impl Gamestate {
         }
 
         if !self.valdate_position() {
-            //TODO: fix issue with repeat collisions making player teleport into walls
             let (x_curr, y_curr) = self.player_position();
 
             let (x_block_past, y_block_past) = self.imaginary_block_position(x_past, y_past);
@@ -84,28 +83,39 @@ impl Gamestate {
             let m = (y_past - y_curr).abs() / (x_past - x_curr).abs();
             let b = y_past - (m * x_past);
 
-            let new_cords = match row_step_direction {
+            let new_cords_x = match row_step_direction {
                 1 => Some((x_right, m * x_right + b)),
                 -1 => Some((x_left, m * x_left + b)),
                 _ => None,
             };
-            match new_cords {
-                Some(cords) => self.player.set_position(cords.0, cords.1),
-                None => {
-                    let correct_cords = match col_step_direction {
-                        1 => Some(((y_bottom - b) / m, y_bottom)),
-                        -1 => Some(((y_top - b) / m, y_top)),
-                        _ => None,
-                    };
-                    match correct_cords {
-                        Some(cords) => {
-                            let (x_corrected, y_corrected) = cords;
-                            self.player.set_position(x_corrected, y_corrected)
-                        }
-                        None => {
-                            println!("No location found through calculations, resetting to past position");
-                            self.player.set_position(x_past, y_past)
-                        }
+
+            let new_cords_y = match col_step_direction {
+                1 => Some(((y_bottom - b) / m, y_bottom)),
+                -1 => Some(((y_top - b) / m, y_top)),
+                _ => None,
+            };
+
+            match (new_cords_x, new_cords_y) {
+                (None, None) => {
+                    println!("No solution found, resetting to previous position");
+                    self.player.set_position(x_past, y_past);
+                }
+                (Some(cords), None) | (None, Some(cords)) => {
+                    let (x, y) = cords;
+                    self.player.set_position(x, y);
+                }
+                (Some(x_cords), Some(y_cords)) => {
+                    if self.imaginary_block_position(x_cords.0, x_cords.1)
+                        == (x_block_past, y_block_past)
+                    {
+                        self.player.set_position(x_cords.0, x_cords.1);
+                    } else if self.imaginary_block_position(y_cords.0, y_cords.1)
+                        == (x_block_past, y_block_past)
+                    {
+                        self.player.set_position(y_cords.0, y_cords.1);
+                    } else {
+                        println!("No solution found, resetting to previous position");
+                        self.player.set_position(x_past, y_past);
                     }
                 }
             }
