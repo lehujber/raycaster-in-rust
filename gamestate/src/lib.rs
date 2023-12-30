@@ -185,8 +185,6 @@ impl Gamestate {
 
         (block_x, block_y)
     }
-
-    // fn touched_blocks(&self, x_start: f32, y_start: f32, x_end: f32, y_end: f32) -> Vec<u16> {}
 }
 
 pub enum TurnDirection {
