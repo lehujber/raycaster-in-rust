@@ -8,6 +8,7 @@ pub struct Renderer {
     wall_color: sdl2::pixels::Color,
     floor_color: sdl2::pixels::Color,
     player_color: sdl2::pixels::Color,
+    ray_color: sdl2::pixels::Color,
 }
 
 impl Renderer {
@@ -25,6 +26,7 @@ impl Renderer {
         let wall_color = sdl2::pixels::Color::RGB(0, 0, 0);
         let floor_color = sdl2::pixels::Color::RGB(0, 0, 0);
         let player_color = sdl2::pixels::Color::RGB(0, 0, 0);
+        let ray_color = sdl2::pixels::Color::RGB(0, 0, 0);
 
         Renderer {
             sdl_context,
@@ -34,13 +36,13 @@ impl Renderer {
             wall_color,
             floor_color,
             player_color,
+            ray_color,
         }
     }
 
     pub fn set_background_color(&mut self, color: sdl2::pixels::Color) {
         self.background_color = color;
     }
-
     pub fn set_wall_color(&mut self, color: sdl2::pixels::Color) {
         self.wall_color = color;
     }
@@ -49,6 +51,9 @@ impl Renderer {
     }
     pub fn set_player_color(&mut self, color: sdl2::pixels::Color) {
         self.player_color = color
+    }
+    pub fn set_ray_color(&mut self, color: sdl2::pixels::Color) {
+        self.ray_color = color
     }
     pub fn set_scale(&mut self, scale: f32) -> Result<(), String> {
         self.canvas.set_scale(scale, scale)
@@ -143,6 +148,23 @@ impl Renderer {
             Renderer::rotate_point(Point::new(x - 5, y), position, player_rotation),
             Renderer::rotate_point(Point::new(x + 2, y), position, player_rotation),
         )
+    }
+
+    pub fn draw_rays(
+        &mut self,
+        player_position: sdl2::rect::Point,
+        ray_targets: Vec<sdl2::rect::Point>,
+    ) -> Result<(), String> {
+        self.canvas.set_draw_color(self.ray_color);
+
+        for ray_target in ray_targets {
+            match self.canvas.draw_line(player_position, ray_target) {
+                Ok(_) => {}
+                Err(s) => return Err(s),
+            };
+        }
+
+        Result::Ok(())
     }
 
     fn rotate_point(

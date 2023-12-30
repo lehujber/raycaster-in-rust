@@ -7,21 +7,34 @@ pub struct Gamestate {
     map: Map,
     player: Player,
     block_size: u16,
+    ray_angles: Vec<f32>,
 }
 
 impl Gamestate {
+    const PLAYER_FOV: f32 = 120.0;
     pub fn new(
         map_matrix: Vec<Vec<bool>>,
         player_x: f32,
         player_y: f32,
         block_size: u16,
+        ray_count: u16,
     ) -> Gamestate {
         let map = Map::new(map_matrix);
-        let player = player::Player::new(player_x, player_y, 120.0);
+        let player = player::Player::new(player_x, player_y, Gamestate::PLAYER_FOV);
+
+        let ray_angles = (1..)
+            .map(|v| {
+                (Gamestate::PLAYER_FOV / (ray_count + 1) as f32) * (v as f32)
+                    + (Gamestate::PLAYER_FOV)
+            })
+            .take(ray_count as usize)
+            .collect::<Vec<f32>>();
+
         Gamestate {
             map,
             player,
             block_size,
+            ray_angles,
         }
     }
 
@@ -120,6 +133,25 @@ impl Gamestate {
                 }
             }
         }
+    }
+
+    pub fn cast_rays(&self) -> Vec<(f32, f32)> {
+        const RADIAN_MULTIPLIER: f32 = std::f32::consts::PI / 180.0;
+        let player_angle = self.player.view_direction() * RADIAN_MULTIPLIER;
+
+        println!("{player_angle}");
+
+        self.ray_angles
+            .iter()
+            .map(|ray_angle| {
+                let angle = player_angle - (ray_angle * RADIAN_MULTIPLIER);
+
+                let (s, c) = angle.sin_cos();
+                let (x, y) = self.player_position();
+
+                (c * 100.0 + x, s * 100.0 + y)
+            })
+            .collect::<Vec<(f32, f32)>>()
     }
 
     fn valdate_position(&self) -> bool {

@@ -1,6 +1,7 @@
 use gamestate::{MoveDirection, TurnDirection};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
+use sdl2::rect::Point;
 use std::f32;
 
 pub fn main() {
@@ -16,12 +17,13 @@ pub fn main() {
     .map(|row| Vec::from(row))
     .collect::<Vec<Vec<bool>>>();
 
-    let mut gamestate = gamestate::Gamestate::new(map, 150.0, 150.0, 100);
+    let mut gamestate = gamestate::Gamestate::new(map, 150.0, 150.0, 100, 5);
 
     renderer.set_background_color(sdl2::pixels::Color::RGB(0, 0, 0));
     renderer.set_wall_color(sdl2::pixels::Color::RGB(67, 255, 20));
     renderer.set_floor_color(sdl2::pixels::Color::RGB(255, 0, 255));
     renderer.set_player_color(sdl2::pixels::Color::RGB(0, 0, 255));
+    renderer.set_ray_color(sdl2::pixels::Color::RGB(255, 0, 0));
 
     match renderer.set_scale(2.0) {
         Ok(_) => {}
@@ -111,6 +113,24 @@ pub fn main() {
         }
 
         let (x, y) = gamestate.player_position();
+
+        let rays_drawing_res = renderer.draw_rays(
+            model_to_screen_coordinate(x, y, gamestate.block_size()),
+            gamestate
+                .cast_rays()
+                .iter()
+                .map(|(x_ray, y_ray)| {
+                    model_to_screen_coordinate(*x_ray, *y_ray, gamestate.block_size())
+                })
+                .collect::<Vec<sdl2::rect::Point>>(),
+        );
+        match rays_drawing_res {
+            Ok(_) => {}
+            Err(s) => {
+                println!("Unsuccessful drawing: {s}")
+            }
+        }
+
         let player_drawing_res = renderer.draw_player(
             model_to_screen_coordinate(x, y, gamestate.block_size()),
             gamestate.player_rotation(),
