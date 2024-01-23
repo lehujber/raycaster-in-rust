@@ -20,7 +20,7 @@ impl Gamestate {
         ray_count: u16,
     ) -> Gamestate {
         let map = Map::new(map_matrix);
-        let player = player::Player::new(player_x, player_y, Gamestate::PLAYER_FOV);
+        let player = player::Player::new(player_x, player_y, Gamestate::PLAYER_FOV, 100);
 
         let ray_angles = (1..)
             .map(|v| {
@@ -147,7 +147,9 @@ impl Gamestate {
                 let (s, c) = angle.sin_cos();
                 let (x, y) = self.player_position();
 
-                (c * 100.0 + x, s * 100.0 + y)
+                (c * 100.0 + x, s * 100.0 + y);
+                let view_distance = self.player.view_distance() as f32;
+                self.ray_wall_collision(x, y, c * view_distance + x, s * view_distance + y)
             })
             .collect::<Vec<(f32, f32)>>()
     }
@@ -184,6 +186,19 @@ impl Gamestate {
         let block_y = y as i16 / self.block_size as i16;
 
         (block_x, block_y)
+    }
+
+    fn ray_wall_collision(
+        &self,
+        player_x: f32,
+        player_y: f32,
+        ray_end_x: f32,
+        ray_end_y: f32,
+    ) -> (f32, f32) {
+        let ray_dir_x = (ray_end_x as i32 - player_x as i32).clamp(0, 1);
+        let ray_dir_y = (ray_end_y as i32 - player_y as i32).clamp(0, 1);
+
+        (ray_end_x, ray_end_y)
     }
 }
 

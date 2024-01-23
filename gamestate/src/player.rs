@@ -5,17 +5,17 @@ pub struct Player {
     view_direction: f32,
     field_of_view: f32,
     posisiton: (f32, f32),
-    view_distance: i32,
+    view_distance: u16,
 }
 
 impl Player {
-    pub fn new(x_position: f32, y_position: f32, fov: f32) -> Player {
+    pub fn new(x_position: f32, y_position: f32, fov: f32, view_distance: u16) -> Player {
         Player {
             movement_speed: 0.0000002,
             view_direction: 90.0,
             field_of_view: fov,
             posisiton: (x_position, y_position),
-            view_distance: 40,
+            view_distance,
         }
     }
 
@@ -51,5 +51,8 @@ impl Player {
     }
     pub fn set_position(&mut self, x: f32, y: f32) {
         self.posisiton = (x, y);
+    }
+    pub fn view_distance(&self) -> u16 {
+        self.view_distance
     }
 }
