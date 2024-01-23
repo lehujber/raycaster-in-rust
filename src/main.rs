@@ -22,7 +22,7 @@ pub fn main() {
     renderer.set_wall_color(sdl2::pixels::Color::RGB(67, 255, 20));
     renderer.set_floor_color(sdl2::pixels::Color::RGB(255, 0, 255));
     renderer.set_player_color(sdl2::pixels::Color::RGB(0, 0, 255));
-    renderer.set_ray_color(sdl2::pixels::Color::RGB(255, 0, 0));
+    renderer.set_ray_color(sdl2::pixels::Color::RGB(0, 191, 255));
 
     match renderer.set_scale(2.0) {
         Ok(_) => {}
