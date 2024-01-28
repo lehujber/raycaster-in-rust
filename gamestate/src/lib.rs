@@ -20,7 +20,7 @@ impl Gamestate {
         ray_count: u16,
     ) -> Gamestate {
         let map = Map::new(map_matrix);
-        let player = player::Player::new(player_x, player_y, Gamestate::PLAYER_FOV, 100);
+        let player = player::Player::new(player_x, player_y, Gamestate::PLAYER_FOV, 150);
 
         let ray_angles = (1..)
             .map(|v| {
@@ -133,6 +133,12 @@ impl Gamestate {
                 }
             }
         }
+        let (x, y) = self.player_position();
+        let block = self.block_id(x, y);
+        let (tl, tr, bl, br) = self.block_corners(block);
+        println!("Block corners:");
+        println!("{}\t{}", tl, tr);
+        println!("{}\t{}", bl, br);
     }
 
     pub fn cast_rays(&self) -> Vec<(f32, f32)> {
@@ -195,8 +201,45 @@ impl Gamestate {
         ray_end_x: f32,
         ray_end_y: f32,
     ) -> (f32, f32) {
+        fn distance(start: (f32, f32), end: (f32, f32)) -> f32 {
+            ((start.0 - end.0).powi(2) + (start.1 - end.1).powi(1)).sqrt()
+        }
+
         let ray_dir_x = (ray_end_x as i32 - player_x as i32).clamp(0, 1);
         let ray_dir_y = (ray_end_y as i32 - player_y as i32).clamp(0, 1);
+
+        let walls = self.map_walls();
+
+        let initial_distance = distance((player_x, player_y), (ray_end_x, ray_end_y));
+
+        let ray_slope_x = (ray_end_x - player_x) / (ray_end_y - player_y);
+        let ray_slope_y = (ray_end_y - player_y) / (ray_end_x - player_x);
+
+        let get_ray_end = |start_x: f32, start_y: f32| -> (f32, f32) {
+            let (vert_x, vert_y) = match ray_dir_x {
+                0 => (start_x - 100.0, start_y),
+                _ => (start_x + 100.0, start_y),
+            };
+            let (hor_x, hor_y) = match ray_dir_y {
+                0 => (start_x, start_y - 100.0),
+                _ => (start_x, start_y + 100.0),
+            };
+
+            let vert_corners = self.block_corners(self.block_id(vert_x, vert_y));
+            let hor_corners = self.block_corners(self.block_id(hor_x, hor_y));
+
+            let vert_edge = match ray_dir_x {
+                0 => vert_corners.3,
+                _ => vert_corners.1,
+            };
+
+            let hor_edge = match ray_dir_y {
+                0 => hor_corners.2,
+                _ => hor_corners.0,
+            };
+
+            unimplemented!()
+        };
 
         (ray_end_x, ray_end_y)
     }
