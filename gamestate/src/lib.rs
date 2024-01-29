@@ -208,12 +208,12 @@ impl Gamestate {
         let ray_dir_x = (ray_end_x as i32 - player_x as i32).clamp(0, 1);
         let ray_dir_y = (ray_end_y as i32 - player_y as i32).clamp(0, 1);
 
-        let walls = self.map_walls();
-
         let initial_distance = distance((player_x, player_y), (ray_end_x, ray_end_y));
 
-        let ray_slope_x = (ray_end_x - player_x) / (ray_end_y - player_y);
-        let ray_slope_y = (ray_end_y - player_y) / (ray_end_x - player_x);
+        // y = mx + b
+        // x = (y-b) / m
+        let m = (ray_end_y - player_y) / (ray_end_x - player_x);
+        let b = player_y - (player_x * m);
 
         let get_ray_end = |start_x: f32, start_y: f32| -> (f32, f32) {
             let (vert_x, vert_y) = match ray_dir_x {
@@ -229,19 +229,35 @@ impl Gamestate {
             let hor_corners = self.block_corners(self.block_id(hor_x, hor_y));
 
             let vert_edge = match ray_dir_x {
-                0 => vert_corners.3,
-                _ => vert_corners.1,
+                0 => vert_corners.2,
+                _ => vert_corners.0,
             };
 
             let hor_edge = match ray_dir_y {
-                0 => hor_corners.2,
-                _ => hor_corners.0,
+                0 => hor_corners.3,
+                _ => hor_corners.1,
             };
 
-            unimplemented!()
+            let vert_edge_y = (m * vert_edge) + b;
+            let hor_edge_x = (hor_edge - b) / m;
+
+            if distance((player_x, player_y), (vert_edge, vert_edge_y))
+                < distance((player_x, player_y), (hor_edge_x, hor_edge))
+            {
+                (vert_edge, vert_edge_y)
+            } else {
+                (hor_edge_x, hor_edge)
+            }
         };
 
-        (ray_end_x, ray_end_y)
+        // (ray_end_x, ray_end_y)
+        let (mut x, mut y) = get_ray_end(player_x, player_y);
+        while distance((x, y), (player_x, player_y)) < initial_distance
+            && !self.map_walls().iter().any(|c| c == &self.block_id(x, y))
+        {
+            (x, y) = get_ray_end(x, y);
+        }
+        (x, y)
     }
 }
 

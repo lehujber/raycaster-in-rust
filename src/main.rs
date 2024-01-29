@@ -7,16 +7,18 @@ pub fn main() {
     let mut renderer = renderer::Renderer::new(800, 600, "Sdl demo window");
 
     let map = [
-        [true, false, false, false],
-        [false, false, true, false],
-        [true, false, true, false],
-        [true, false, false, false],
+        [true, true, true, true, true, true],
+        [true, false, false, false, false, true],
+        [true, false, false, true, false, true],
+        [true, true, false, true, false, true],
+        [true, true, false, false, false, true],
+        [true, true, true, true, true, true],
     ]
     .iter()
     .map(|row| Vec::from(row))
     .collect::<Vec<Vec<bool>>>();
 
-    let mut gamestate = gamestate::Gamestate::new(map, 150.0, 150.0, 100, 5);
+    let mut gamestate = gamestate::Gamestate::new(map, 150.0, 150.0, 100, 15);
 
     renderer.set_background_color(sdl2::pixels::Color::RGB(0, 0, 0));
     renderer.set_wall_color(sdl2::pixels::Color::RGB(67, 255, 20));
@@ -24,7 +26,7 @@ pub fn main() {
     renderer.set_player_color(sdl2::pixels::Color::RGB(0, 0, 255));
     renderer.set_ray_color(sdl2::pixels::Color::RGB(0, 191, 255));
 
-    match renderer.set_scale(2.0) {
+    match renderer.set_scale(1.5) {
         Ok(_) => {}
         Err(s) => {
             println!("Error setting scale: {s}")
