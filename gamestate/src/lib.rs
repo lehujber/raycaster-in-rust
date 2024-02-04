@@ -133,12 +133,6 @@ impl Gamestate {
                 }
             }
         }
-        let (x, y) = self.player_position();
-        let block = self.block_id(x, y);
-        let (tl, tr, bl, br) = self.block_corners(block);
-        println!("Block corners:");
-        println!("{}\t{}", tl, tr);
-        println!("{}\t{}", bl, br);
     }
 
     pub fn cast_rays(&self) -> Vec<(f32, f32)> {
@@ -151,11 +145,12 @@ impl Gamestate {
                 let angle = player_angle - (ray_angle * RADIAN_MULTIPLIER);
 
                 let (s, c) = angle.sin_cos();
+                println!("\n\nsincos: ({},{})", s, c);
                 let (x, y) = self.player_position();
 
-                (c * 100.0 + x, s * 100.0 + y);
+                // (c * 100.0 + x, s * 100.0 + y);
                 let view_distance = self.player.view_distance() as f32;
-                self.ray_wall_collision(x, y, c * view_distance + x, s * view_distance + y)
+                (c * view_distance + x, s * view_distance + y)
             })
             .collect::<Vec<(f32, f32)>>()
     }
@@ -192,72 +187,6 @@ impl Gamestate {
         let block_y = y as i16 / self.block_size as i16;
 
         (block_x, block_y)
-    }
-
-    fn ray_wall_collision(
-        &self,
-        player_x: f32,
-        player_y: f32,
-        ray_end_x: f32,
-        ray_end_y: f32,
-    ) -> (f32, f32) {
-        fn distance(start: (f32, f32), end: (f32, f32)) -> f32 {
-            ((start.0 - end.0).powi(2) + (start.1 - end.1).powi(1)).sqrt()
-        }
-
-        let ray_dir_x = (ray_end_x as i32 - player_x as i32).clamp(0, 1);
-        let ray_dir_y = (ray_end_y as i32 - player_y as i32).clamp(0, 1);
-
-        let initial_distance = distance((player_x, player_y), (ray_end_x, ray_end_y));
-
-        // y = mx + b
-        // x = (y-b) / m
-        let m = (ray_end_y - player_y) / (ray_end_x - player_x);
-        let b = player_y - (player_x * m);
-
-        let get_ray_end = |start_x: f32, start_y: f32| -> (f32, f32) {
-            let (vert_x, vert_y) = match ray_dir_x {
-                0 => (start_x - 100.0, start_y),
-                _ => (start_x + 100.0, start_y),
-            };
-            let (hor_x, hor_y) = match ray_dir_y {
-                0 => (start_x, start_y - 100.0),
-                _ => (start_x, start_y + 100.0),
-            };
-
-            let vert_corners = self.block_corners(self.block_id(vert_x, vert_y));
-            let hor_corners = self.block_corners(self.block_id(hor_x, hor_y));
-
-            let vert_edge = match ray_dir_x {
-                0 => vert_corners.2,
-                _ => vert_corners.0,
-            };
-
-            let hor_edge = match ray_dir_y {
-                0 => hor_corners.3,
-                _ => hor_corners.1,
-            };
-
-            let vert_edge_y = (m * vert_edge) + b;
-            let hor_edge_x = (hor_edge - b) / m;
-
-            if distance((player_x, player_y), (vert_edge, vert_edge_y))
-                < distance((player_x, player_y), (hor_edge_x, hor_edge))
-            {
-                (vert_edge, vert_edge_y)
-            } else {
-                (hor_edge_x, hor_edge)
-            }
-        };
-
-        // (ray_end_x, ray_end_y)
-        let (mut x, mut y) = get_ray_end(player_x, player_y);
-        while distance((x, y), (player_x, player_y)) < initial_distance
-            && !self.map_walls().iter().any(|c| c == &self.block_id(x, y))
-        {
-            (x, y) = get_ray_end(x, y);
-        }
-        (x, y)
     }
 }
 
