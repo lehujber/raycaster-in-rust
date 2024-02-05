@@ -187,31 +187,39 @@ impl Gamestate {
 
         let mut dist = 0.0;
         // (cos * dist + player_x, sin * dist + player_y)
-        // while dist < view_distance {
-        let x_next = cos * (dist + 1.0) + player_x;
-        let y_next = sin * (dist + 1.0) + player_y;
-        if self.map_walls().contains(&self.block_id(x_next, y_next)) {
-            return (cos * dist + player_x, sin * dist + player_y);
+        while dist < view_distance {
+            let x_next = cos * (dist + 10.0) + player_x;
+            let y_next = sin * (dist + 10.0) + player_y;
+            if self.map_walls().contains(&self.block_id(x_next, y_next)) {
+                return (cos * dist + player_x, sin * dist + player_y);
+            }
+
+            let (neg_x, pos_y, pos_x, neg_y) = self.block_corners(self.block_id(x_next, y_next));
+            let new_dist = match (&hor, &vert) {
+                (CordDir::Negative, CordDir::Positive) => {
+                    smaller_distance((cos, sin), (neg_x, pos_y), (player_x, player_y))
+                }
+                (CordDir::Positive, CordDir::Positive) => {
+                    smaller_distance((cos, sin), (pos_x, pos_y), (player_x, player_y))
+                }
+                (CordDir::Positive, CordDir::Negative) => {
+                    smaller_distance((cos, sin), (neg_x, neg_y), (player_x, player_y))
+                }
+                (CordDir::Negative, CordDir::Negative) => {
+                    smaller_distance((cos, sin), (pos_x, neg_y), (player_x, player_y))
+                }
+            };
+
+            if new_dist == dist {
+                return (cos * dist + player_x, sin * dist + player_y);
+            }
+            dist = new_dist;
         }
 
-        let (neg_x, pos_y, pos_x, neg_y) = self.block_corners(self.block_id(x_next, y_next));
-        dist = match (&hor, &vert) {
-            (CordDir::Negative, CordDir::Positive) => {
-                smaller_distance((cos, sin), (neg_x, pos_y), (x_next, y_next))
-            }
-            (CordDir::Positive, CordDir::Positive) => {
-                smaller_distance((cos, sin), (pos_x, pos_y), (x_next, y_next))
-            }
-            (CordDir::Positive, CordDir::Negative) => {
-                smaller_distance((cos, sin), (neg_x, neg_y), (x_next, y_next))
-            }
-            (CordDir::Negative, CordDir::Negative) => {
-                smaller_distance((cos, sin), (pos_x, neg_y), (x_next, y_next))
-            }
-        };
-        // }
-
-        (cos * dist + player_x, sin * dist + player_y)
+        (
+            cos * view_distance + player_x,
+            sin * view_distance + player_y,
+        )
     }
 
     fn valdate_position(&self) -> bool {
