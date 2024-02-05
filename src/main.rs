@@ -18,7 +18,7 @@ pub fn main() {
     .map(|row| Vec::from(row))
     .collect::<Vec<Vec<bool>>>();
 
-    let mut gamestate = gamestate::Gamestate::new(map, 150.0, 150.0, 100, 1000);
+    let mut gamestate = gamestate::Gamestate::new(map, 150.0, 150.0, 100, 1);
 
     renderer.set_background_color(sdl2::pixels::Color::RGB(0, 0, 0));
     renderer.set_wall_color(sdl2::pixels::Color::RGB(67, 255, 20));
