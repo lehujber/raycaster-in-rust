@@ -204,7 +204,7 @@ impl Renderer {
             .enumerate()
             .filter(|x| *x.1 < max_distance)
             .map(|(i, r)| {
-                let column_height = (max_distance / (max_distance - r)) * height;
+                let column_height = ((max_distance / r) * height).clamp(0.0, height);
                 let height_from_top = (height - column_height) / 2.0;
 
                 Rect::new(
