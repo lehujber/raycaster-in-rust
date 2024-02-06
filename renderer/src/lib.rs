@@ -202,9 +202,8 @@ impl Renderer {
         let columns = rays
             .iter()
             .enumerate()
-            .filter(|x| *x.1 < max_distance)
             .map(|(i, r)| {
-                let column_height = ((max_distance / r) * height).clamp(0.0, height);
+                let column_height = height - ((r / max_distance) * height).clamp(0.0, height);
                 let height_from_top = (height - column_height) / 2.0;
 
                 Rect::new(
