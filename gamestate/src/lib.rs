@@ -60,6 +60,10 @@ impl Gamestate {
     pub fn player_rotation(&self) -> f32 {
         self.player.view_direction()
     }
+
+    pub fn view_distance(&self) -> f32 {
+        self.player.view_distance() as f32
+    }
     pub fn player_rotate(&mut self, dir: TurnDirection, delta_time: u128) {
         match dir {
             TurnDirection::Left => self.player.rotate(-1.0, delta_time),
@@ -188,8 +192,8 @@ impl Gamestate {
         let mut dist = 0.0;
         // (cos * dist + player_x, sin * dist + player_y)
         while dist < view_distance {
-            let x_next = cos * (dist + 10.0) + player_x;
-            let y_next = sin * (dist + 10.0) + player_y;
+            let x_next = cos * (dist + 5.0) + player_x;
+            let y_next = sin * (dist + 5.0) + player_y;
             if self.map_walls().contains(&self.block_id(x_next, y_next)) {
                 return (cos * dist + player_x, sin * dist + player_y);
             }

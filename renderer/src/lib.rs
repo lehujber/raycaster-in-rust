@@ -166,6 +166,58 @@ impl Renderer {
 
         Result::Ok(())
     }
+    pub fn draw_screen(
+        &mut self,
+        topleft: sdl2::rect::Point,
+        botright: sdl2::rect::Point,
+    ) -> Result<(), String> {
+        use sdl2::rect::Point;
+        use sdl2::rect::Rect;
+
+        self.canvas.set_draw_color(self.floor_color);
+
+        let diff = Point::new(
+            (botright.x - topleft.x).abs(),
+            (topleft.y - botright.y).abs(),
+        );
+        let middle = topleft + Point::new(diff.x / 2, diff.y / 2);
+
+        let rect = Rect::new(topleft.x, topleft.y, diff.x as u32, diff.y as u32);
+
+        self.canvas.fill_rect(rect)
+    }
+
+    pub fn draw_walls(&mut self, rays: Vec<(f32)>, max_distance: f32) -> Result<(), String> {
+        use sdl2::rect::Rect;
+
+        const width: f32 = 800.0 - 250.0;
+        const height: f32 = 300.0;
+
+        self.canvas.set_draw_color(self.wall_color);
+
+        let ray_count = rays.len();
+
+        let column_width = width / (ray_count as f32);
+
+        let columns = rays
+            .iter()
+            .enumerate()
+            .filter(|x| *x.1 < max_distance)
+            .map(|(i, r)| {
+                let column_height = (max_distance / (max_distance - r)) * height;
+                let height_from_top = (height - column_height) / 2.0;
+
+                Rect::new(
+                    (250.0 + (i as f32) * column_width) as i32,
+                    height_from_top as i32,
+                    column_width as u32,
+                    column_height as u32,
+                )
+            })
+            .collect::<Vec<Rect>>();
+
+        self.canvas.fill_rects(&columns)
+    }
 
     fn rotate_point(
         p: sdl2::rect::Point,
