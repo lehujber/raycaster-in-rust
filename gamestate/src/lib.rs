@@ -1,6 +1,5 @@
 mod map;
 mod player;
-use std::env::VarError;
 
 use crate::map::Map;
 use crate::player::Player;
@@ -192,8 +191,8 @@ impl Gamestate {
         let mut dist = 0.0;
         // (cos * dist + player_x, sin * dist + player_y)
         while dist < view_distance {
-            let x_next = cos * (dist + 5.0) + player_x;
-            let y_next = sin * (dist + 5.0) + player_y;
+            let x_next = cos * (dist + 10.0) + player_x;
+            let y_next = sin * (dist + 10.0) + player_y;
             if self.map_walls().contains(&self.block_id(x_next, y_next)) {
                 return (cos * dist + player_x, sin * dist + player_y, true);
             }

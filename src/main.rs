@@ -18,13 +18,14 @@ pub fn main() {
     .map(|row| Vec::from(row))
     .collect::<Vec<Vec<bool>>>();
 
-    let mut gamestate = gamestate::Gamestate::new(map, 150.0, 150.0, 100, 55);
+    let mut gamestate = gamestate::Gamestate::new(map, 150.0, 150.0, 100, 275);
 
     renderer.set_background_color(sdl2::pixels::Color::RGB(0, 0, 0));
-    renderer.set_wall_color(sdl2::pixels::Color::RGB(67, 255, 20));
-    renderer.set_floor_color(sdl2::pixels::Color::RGB(255, 0, 255));
+    renderer.set_wall_color(sdl2::pixels::Color::RGB(147, 151, 153));
+    renderer.set_floor_color(sdl2::pixels::Color::RGB(52, 140, 49));
     renderer.set_player_color(sdl2::pixels::Color::RGB(0, 0, 255));
     renderer.set_ray_color(sdl2::pixels::Color::RGB(0, 191, 255));
+    renderer.set_sky_color(sdl2::pixels::Color::RGB(135, 206, 235));
 
     match renderer.set_scale(1.5) {
         Ok(_) => {}

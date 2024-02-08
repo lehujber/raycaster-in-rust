@@ -1,3 +1,5 @@
+use sdl2::pixels;
+
 #[allow(dead_code)]
 pub struct Renderer {
     sdl_context: sdl2::Sdl,
@@ -9,6 +11,7 @@ pub struct Renderer {
     floor_color: sdl2::pixels::Color,
     player_color: sdl2::pixels::Color,
     ray_color: sdl2::pixels::Color,
+    sky_color: sdl2::pixels::Color,
 }
 
 impl Renderer {
@@ -27,6 +30,7 @@ impl Renderer {
         let floor_color = sdl2::pixels::Color::RGB(0, 0, 0);
         let player_color = sdl2::pixels::Color::RGB(0, 0, 0);
         let ray_color = sdl2::pixels::Color::RGB(0, 0, 0);
+        let sky_color = sdl2::pixels::Color::RGB(0, 0, 0);
 
         Renderer {
             sdl_context,
@@ -37,6 +41,7 @@ impl Renderer {
             floor_color,
             player_color,
             ray_color,
+            sky_color,
         }
     }
 
@@ -54,6 +59,9 @@ impl Renderer {
     }
     pub fn set_ray_color(&mut self, color: sdl2::pixels::Color) {
         self.ray_color = color
+    }
+    pub fn set_sky_color(&mut self, color: sdl2::pixels::Color) {
+        self.sky_color = color
     }
     pub fn set_scale(&mut self, scale: f32) -> Result<(), String> {
         self.canvas.set_scale(scale, scale)
@@ -200,25 +208,45 @@ impl Renderer {
         let rects = rays
             .iter()
             .enumerate()
-            .filter(|(_, (_, b))| *b)
-            .map(|(i, (r, _))| {
+            .flat_map(|(i, (r, b))| {
                 let x = 250.0 + (WIDTH as f32) / ray_count as f32 * i as f32;
                 let column_height = (HEIGHT as f32) * r;
 
                 let y = (HEIGHT as f32 - column_height) / 2.0;
 
-                // println!("{i}\t{r}\t{column_height}");
+                let sky = (
+                    Rect::new(x as i32, 0, column_width as u32, y as u32),
+                    self.sky_color,
+                );
 
-                Rect::new(
-                    x as i32,
-                    y as i32,
-                    column_width as u32,
-                    column_height as u32,
-                )
+                if !(*b) {
+                    return vec![sky];
+                }
+
+                let wall = (
+                    Rect::new(
+                        x as i32,
+                        y as i32,
+                        column_width as u32,
+                        column_height as u32,
+                    ),
+                    self.wall_color,
+                );
+                vec![sky, wall]
             })
-            .collect::<Vec<Rect>>();
+            .collect::<Vec<(Rect, pixels::Color)>>();
 
-        self.canvas.fill_rects(&rects)
+        // self.canvas.fill_rects(&rects)
+        for (rect, col) in rects {
+            self.canvas.set_draw_color(col);
+            let draw_res = self.canvas.fill_rect(rect);
+            match draw_res {
+                Ok(_) => {}
+                Err(_) => return draw_res,
+            }
+        }
+
+        Result::Ok(())
     }
 
     fn rotate_point(
