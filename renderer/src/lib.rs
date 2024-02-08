@@ -180,42 +180,45 @@ impl Renderer {
             (botright.x - topleft.x).abs(),
             (topleft.y - botright.y).abs(),
         );
-        let middle = topleft + Point::new(diff.x / 2, diff.y / 2);
 
         let rect = Rect::new(topleft.x, topleft.y, diff.x as u32, diff.y as u32);
 
         self.canvas.fill_rect(rect)
     }
 
-    pub fn draw_walls(&mut self, rays: Vec<(f32)>, max_distance: f32) -> Result<(), String> {
+    pub fn draw_walls(&mut self, rays: Vec<(f32, bool)>) -> Result<(), String> {
+        // println!("\n\n");
         use sdl2::rect::Rect;
 
-        const width: f32 = 800.0 - 250.0;
-        const height: f32 = 300.0;
+        const WIDTH: u32 = 800 - 250;
+        const HEIGHT: u32 = 300;
 
         self.canvas.set_draw_color(self.wall_color);
 
-        let ray_count = rays.len();
-
-        let column_width = width / (ray_count as f32);
-
-        let columns = rays
+        let ray_count = rays.iter().len();
+        let column_width = (WIDTH as f32) / ray_count as f32;
+        let rects = rays
             .iter()
             .enumerate()
-            .map(|(i, r)| {
-                let column_height = height - ((r / max_distance) * height).clamp(0.0, height);
-                let height_from_top = (height - column_height) / 2.0;
+            .filter(|(_, (_, b))| *b)
+            .map(|(i, (r, _))| {
+                let x = 250.0 + (WIDTH as f32) / ray_count as f32 * i as f32;
+                let column_height = (HEIGHT as f32) * r;
+
+                let y = (HEIGHT as f32 - column_height) / 2.0;
+
+                // println!("{i}\t{r}\t{column_height}");
 
                 Rect::new(
-                    (250.0 + (i as f32) * column_width) as i32,
-                    height_from_top as i32,
+                    x as i32,
+                    y as i32,
                     column_width as u32,
                     column_height as u32,
                 )
             })
             .collect::<Vec<Rect>>();
 
-        self.canvas.fill_rects(&columns)
+        self.canvas.fill_rects(&rects)
     }
 
     fn rotate_point(

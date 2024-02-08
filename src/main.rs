@@ -18,7 +18,7 @@ pub fn main() {
     .map(|row| Vec::from(row))
     .collect::<Vec<Vec<bool>>>();
 
-    let mut gamestate = gamestate::Gamestate::new(map, 150.0, 150.0, 100, 15);
+    let mut gamestate = gamestate::Gamestate::new(map, 150.0, 150.0, 100, 55);
 
     renderer.set_background_color(sdl2::pixels::Color::RGB(0, 0, 0));
     renderer.set_wall_color(sdl2::pixels::Color::RGB(67, 255, 20));
@@ -119,7 +119,7 @@ pub fn main() {
         let rays_drawing_res = renderer.draw_rays(
             model_to_map_coordinate(x, y, gamestate.block_size()),
             rays.iter()
-                .map(|(x_ray, y_ray)| {
+                .map(|(x_ray, y_ray, _)| {
                     model_to_map_coordinate(*x_ray, *y_ray, gamestate.block_size())
                 })
                 .collect::<Vec<sdl2::rect::Point>>(),
@@ -153,16 +153,24 @@ pub fn main() {
             }
         }
 
+        println!("\n\n");
         let ray_lengths = rays
             .iter()
-            .map(|(ray_x, ray_y)| {
+            .map(|(ray_x, ray_y, hits_wall)| {
                 let x_diff = (ray_x - x).powi(2);
                 let y_diff = (ray_y - y).powi(2);
 
-                (x_diff - y_diff).sqrt()
+                let dist = 1.0 - (x_diff + y_diff).sqrt() / gamestate.view_distance();
+                (dist, *hits_wall)
             })
-            .collect::<Vec<f32>>();
-        renderer.draw_walls(ray_lengths, gamestate.view_distance());
+            .collect::<Vec<(f32, bool)>>();
+        let walls_drawing_res = renderer.draw_walls(ray_lengths);
+        match walls_drawing_res {
+            Ok(_) => {}
+            Err(s) => {
+                println!("Unsuccessful drawing: {s}")
+            }
+        }
         renderer.present_canvas();
     }
 }

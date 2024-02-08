@@ -141,7 +141,7 @@ impl Gamestate {
         }
     }
 
-    pub fn cast_rays(&self) -> Vec<(f32, f32)> {
+    pub fn cast_rays(&self) -> Vec<(f32, f32, bool)> {
         const RADIAN_MULTIPLIER: f32 = std::f32::consts::PI / 180.0;
         let player_angle = self.player.view_direction() * RADIAN_MULTIPLIER;
 
@@ -152,10 +152,10 @@ impl Gamestate {
 
                 self.ray_wall_collision(angle)
             })
-            .collect::<Vec<(f32, f32)>>()
+            .collect::<Vec<(f32, f32, bool)>>()
     }
 
-    fn ray_wall_collision(&self, ray_angle: f32) -> (f32, f32) {
+    fn ray_wall_collision(&self, ray_angle: f32) -> (f32, f32, bool) {
         const RADIAN_MULTIPLIER: f32 = std::f32::consts::PI / 180.0;
         let view_distance = self.player.view_distance() as f32;
         let (player_x, player_y) = self.player.position();
@@ -195,7 +195,7 @@ impl Gamestate {
             let x_next = cos * (dist + 5.0) + player_x;
             let y_next = sin * (dist + 5.0) + player_y;
             if self.map_walls().contains(&self.block_id(x_next, y_next)) {
-                return (cos * dist + player_x, sin * dist + player_y);
+                return (cos * dist + player_x, sin * dist + player_y, true);
             }
 
             let (neg_x, pos_y, pos_x, neg_y) = self.block_corners(self.block_id(x_next, y_next));
@@ -215,7 +215,7 @@ impl Gamestate {
             };
 
             if new_dist == dist {
-                return (cos * dist + player_x, sin * dist + player_y);
+                return (cos * dist + player_x, sin * dist + player_y, true);
             }
             dist = new_dist;
         }
@@ -223,6 +223,7 @@ impl Gamestate {
         (
             cos * view_distance + player_x,
             sin * view_distance + player_y,
+            false,
         )
     }
 
